@@ -1,0 +1,70 @@
+CISC 472 Assignment 3
+Due March 26, 2021 at 18:00
+
+In this assignment, you will calibrate a tracked stylus using the
+sphere-fitting method described in the notes on Least-Squares Problems.
+
+Three sets of points are provided.  These were collected in a
+calibration procedure using the NDI Polaris system.  The stylus tip
+was placed in a divot and the stylus moved around in the hemisphere
+over the divot.
+
+The files are
+
+  pivot_calibration_0.csv
+  pivot_calibration_1.csv
+  pivot_calibration_2.csv
+
+In Matlab, starting with the skeleton code provided:
+
+1. Implement a pivot calibration method using 'fitSphere' and other
+   code to determine the best-fit vector to the stylus tip in the
+   stylus's *local* coordinate system.
+
+2. Implement a RANSAC variant of 'fitSphere' called 'fitSphereWithRANSAC'.
+
+3. For each calibration set: determine the best-fit local vector using
+   'fitSphere' and 'fitSphereWithRANSAC'.  Record the best-fit vector
+   and the standard deviation of the best-fit vector using each method.
+
+4. For each calibration set: *Render* the best-fit vectors, along with
+   the ellipsoid of the 95% confidence interval.  Record the rendered
+   images.  To render, you'll need to get the principal axes of the
+   cloud of best-fit vectors; you can use 'eig' and 'cov' in Matlab
+   for this.  Then the 95% CI on each axis is 1.96*sqrt(eigenvalue)
+   for that axis.
+
+5. Answer these questions:
+
+   5a. What characterizes a good calibration set?  Justify based on your
+       results.
+   
+   5b. What method (sphere or sphere-with-ransac) was best for handling
+       each calibration set?  Is it always the same method, or do
+       different characteristics of the set deserve different methods?
+       Justify your answer.
+
+   5c. What recommendations do you have for pivot calibration?
+
+To hand in
+
+  Create a directory called 'a3'.  In that directory, put *exactly* these files:
+
+      a3.m                          your working code
+
+      calibration_0.png             your rendered image of pivot_calibration_0.csv
+      calibration_0_ransac.png      your rendered image of pivot_calibration_0.csv using RANSAC
+      calibration_1.png
+      calibration_1_ransac.png
+      calibration_2.png
+      calibration_2_ransac.png
+      calibration_3.png
+      calibration_3_ransac.png
+
+      README.txt
+
+   The README.txt file should contain your name(s) and netid(s), along
+   with your answers to #5 above and your best-fit vectors and their
+   standard deviation from #3 for each calibration set.
+
+   Zip the a3 directory and submit it on OnQ.
