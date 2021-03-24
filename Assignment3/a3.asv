@@ -83,11 +83,8 @@ drawPointsWithEllipsoid( c_world, c_stdev );
 % See watkins.cs.queensu.ca/~jstewart/472/notes/15/15-least-squares-problems.html
 
 function [c, r] = fitSphere( pos )
-    % Parameters:
-    % pos: list of 3d coordinates
-    % Return:
-    % c: center of sphere coordinates
-    % r: radius of sphere
+    % c: center
+    % r: radius
     [m, ~] = size(pos);
     A = zeros(m, 4);
     b = zeros(m, 1);
@@ -101,11 +98,12 @@ function [c, r] = fitSphere( pos )
         b(i) = xdotx;
     end
     
-    % calculate our vector of unknowns (A.K.A, x in the Ax=b equation)
-    unknowns = (((A'*A)^-1)*A')*b;
+    unknowns = (((A'*A)^-1)*A')*b
     
-    c = [unknowns(1); unknowns(2); unknowns(3)];
-    r = sqrt(unknowns(4) + dot(c, c));
+    c = ;
+    
+    c = zeros(3,1);
+    r = 1;
 end
   
 
