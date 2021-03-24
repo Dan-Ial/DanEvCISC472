@@ -20,15 +20,15 @@ setupDrawing();
 
 % fit the sphere to get centre c and radius r
 
-[c, r] = fitSphere( pos );
+% [c, r] = fitSphere( pos );
 
 % fit the sphere using RANSAC, instead.  Note that RANSAC should
 % return a list of indices of the inlying poses, and only those poses
 % should be used subsequently.
 
-% [c, r, inlierIndices] = fitSphereWithRANSAC( pos );
-% pos = pos( inlierIndices, : );
-% orient = orient( inlierIndices, : );
+[c, r, inlierIndices] = fitSphereWithRANSAC( pos );
+pos = pos( inlierIndices, : );
+orient = orient( inlierIndices, : );
 
 % Show the fit
 
@@ -117,12 +117,47 @@ end
 % See en.wikipedia.org/wiki/Random_sample_consensus
 
 function [c, r, bestInlierIndices] = fitSphereWithRANSAC( pos )
-    
-    % [YOUR CODE HERE (part 2)]
-
-    c = zeros(3,1);
-    r = 1;
-    bestInlierIndices = 1:size(pos,1);
+    % bestInlierIndices is the indexes of the coordinates
+    numOfIterations = 20;
+    threshold = 10;
+    [m, ~] = size(pos);
+    bestInlierIndices = [];
+    bestc = [0; 0; 0];
+    bestr = 0;
+    for i = 1:numOfIterations
+        newIndicies = [];
+        % randomly select 4 coordinates to make a model
+        coord1 = pos(randi(m), :);
+        coord2 = pos(randi(m), :);
+        coord3 = pos(randi(m), :);
+        coord4 = pos(randi(m), :);
+        randCoords = [coord1; coord2; coord3; coord4];
+        
+        % pass in those coordinates into fitSphere
+        [tempc, tempr] = fitSphere(randCoords);
+        
+        % create a list of coordinates which fit to the model
+        for j = 1:m
+            % get the distance between c and pos(j, :)
+            distance = sqrt((tempc(1) - pos(j, 1))^2 + ...
+                (tempc(2) - pos(j, 2))^2 + (tempc(3) - pos(j, 3))^2);
+            % see if the distance is close enough to r
+            % if so, add the index to the list
+            abs(tempr - distance);
+            if abs(tempr - distance) < threshold
+                newIndicies = [newIndicies, j];
+            end
+        end
+        
+        % check if this model is the best
+        [~, n1] = size(bestInlierIndices);
+        [~, n2] = size(newIndicies);
+        if n2 > n1
+            bestInlierIndices = newIndicies;
+            c = tempc;
+            r = tempr;
+        end
+    end
 end
   
 
