@@ -2,7 +2,7 @@
 
 stylusID = '8700340';
 markerID = '8700339';
-dataFile = 'pivot_calibration_2.csv';
+dataFile = 'pivot_calibration_0.csv';
 
 setupDrawing();
 
@@ -20,15 +20,15 @@ setupDrawing();
 
 % fit the sphere to get centre c and radius r
 
-[c, r] = fitSphere( pos );
+% [c, r] = fitSphere( pos );
 
 % fit the sphere using RANSAC, instead.  Note that RANSAC should
 % return a list of indices of the inlying poses, and only those poses
 % should be used subsequently.
 
-% [c, r, inlierIndices] = fitSphereWithRANSAC( pos );
-% pos = pos( inlierIndices, : );
-% orient = orient( inlierIndices, : );
+[c, r, inlierIndices] = fitSphereWithRANSAC( pos );
+pos = pos( inlierIndices, : );
+orient = orient( inlierIndices, : );
 
 % Show the fit
 
@@ -397,31 +397,63 @@ function drawPointsWithEllipsoid( points, stdev )
     [eigVec, eigVal] = eig(cov(points));
     [x,y,z] = ellipsoid(0,0,0,1,1,1);
     ellipsoidMat = [x(:), y(:), z(:)];
-    [m, ~] = size(ellipsoidMat);
-    rotMat = [];
-    for j = 1:m
-        newVec = eigVec' * ellipsoidMat(j, :)';
-        rotMat = [rotMat; newVec'];
+    [m, n] = size(ellipsoidMat);
+    
+    %calculate rotation
+    rotMat = [];    
+    for row = 1:m  %pull out a row of ellipsoidMat
+        temp = eigVec' * ellipsoidMat(row,:)';
+        rotMat = [rotMat; temp'];
     end
-    % translate the matrix
-    translateMat = rotMat;
-    xLong = 1.96*sqrt(eigVal(1,1)) .* translateMat(:, 1);
-    yLong = 1.96*sqrt(eigVal(2,2)) .* translateMat(:, 2);
-    zLong = 1.96*sqrt(eigVal(3,3)) .* translateMat(:, 3);
-    x = [];
-    y = [];
-    z = [];
+    
+    %calculate translation
+    xTrans = 1.96*sqrt(eigVal(1,1)) .* rotMat(:, 1);
+    yTrans = 1.96*sqrt(eigVal(2,2)) .* rotMat(:, 2);
+    zTrans = 1.96*sqrt(eigVal(3,3)) .* rotMat(:, 3);
+    
+    for i = 1:m
+        xTrans(i,1) = xTrans(i,1) + xc;
+        yTrans(i,1) = yTrans(i,1) + yc;
+        zTrans(i,1) = zTrans(i,1) + zc;
+    end
+    
+    %conver 441x1 back to 21x21
+    X = [];
+    Y = [];
+    Z = [];
     for k = 1:21:441
-        x = [x, xLong(k:k+20)];
-        y = [y, yLong(k:k+20)];
-        z = [z, zLong(k:k+20)];
+        X = [X, xTrans(k:k+20)];
+        Y = [Y, yTrans(k:k+20)];
+        Z = [Z, zTrans(k:k+20)];
     end
-    for q = 1:21
-        for r = 1:21
-            x(q, r) = x(q, r) + xc;
-            y(q, r) = y(q, r) + yc;
-            z(q, r) = z(q, r) + zc;
-        end
-    end
+        
+%     rotMat = [];
+%     for j = 1:m
+%         newVec = eigVec' * ellipsoidMat(j, :)';
+%         rotMat = [rotMat; newVec'];
+%     end
+%     % translate the matrix
+%     translateMat = rotMat;
+%     xLong = 1.96*sqrt(eigVal(1,1)) .* translateMat(:, 1);
+%     yLong = 1.96*sqrt(eigVal(2,2)) .* translateMat(:, 2);
+%     zLong = 1.96*sqrt(eigVal(3,3)) .* translateMat(:, 3);
+%     x = [];
+%     y = [];
+%     z = [];
+%     for k = 1:21:441
+%         x = [x, xLong(k:k+20)];
+%         y = [y, yLong(k:k+20)];
+%         z = [z, zLong(k:k+20)];
+%     end
+%     for q = 1:21
+%         for r = 1:21
+%             x(q, r) = x(q, r) + xc;
+%             y(q, r) = y(q, r) + yc;
+%             z(q, r) = z(q, r) + zc;
+%         end
+%     end
     % apply a transformation to those points
+    %figure
+    surf(X, Y, Z, 'FaceAlpha', 0.1)
+    %axis equal
 end
