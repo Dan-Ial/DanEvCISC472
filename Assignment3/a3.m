@@ -35,14 +35,58 @@ orient = orient( inlierIndices, : );
 drawCoordSystems( pos, orient );
 %drawSphere( c, r );
 
-% Transform c into the coordinate system of each pose
-
-% [YOUR CODE HERE (part 3)]
+% Transform c into the coordinate system of each pos
+[m, ~] = size(pos);
+cTransformedToPositions = zeros(m, 4);
+for i = 1:m
+    % generate a transformed c relative to pos(i)
+   
+    % get the rotation matrix
+    rotationMat = quaternion_to_matrix(orient(i, :));
+    u = rotationMat(:, 1);
+    v = rotationMat(:, 2);
+    w = rotationMat(:, 3);
+    transformMat = [
+            u', dot(-pos(i, :), u);
+            v', dot(-pos(i, :), v);
+            w', dot(-pos(i, :), w);
+            0, 0, 0, 1 ];
+    temp = transformMat * [c; 1];
+    cTransformedToPositions(i, :) = temp';
+end
 
 % Find the average transformed c, which should be the same in all of
 % the stylus coordinate systems.  Also find the standard deviation.
+xSum = 0;
+ySum = 0;
+zSum = 0;
+for j = 1:m
+   % sum the x values
+   xSum = xSum + cTransformedToPositions(j, 1);
+   % sum the y values
+   ySum = ySum + cTransformedToPositions(j, 2);
+   % sum the z values
+   zSum = zSum + cTransformedToPositions(j, 3);
+end
+xMean = xSum/m;
+yMean = ySum/m;
+zMean = zSum/m;
 
-% [YOUR CODE HERE (part 3)]
+% finding the standard deviation
+xStdDeviationSum = 0;
+yStdDeviationSum = 0;
+zStdDeviationSum = 0;
+for k = 1:m
+    % x standard deviation
+    xStdDeviationSum = xStdDeviationSum + (cTransformedToPositions(k, 1) - xMean)^2;
+    % y standard deviation
+    yStdDeviationSum = yStdDeviationSum + (cTransformedToPositions(k, 2) - yMean)^2;
+    % z standard deviation
+    zStdDeviationSum = zStdDeviationSum + (cTransformedToPositions(k, 3) - zMean)^2;
+end
+xStdDev = sqrt(xStdDeviationSum / m);
+yStdDev = sqrt(yStdDeviationSum / m);
+zStdDev = sqrt(zStdDeviationSum / m);
 
 % Report the results
 %
@@ -50,8 +94,8 @@ drawCoordSystems( pos, orient );
 % system.  'c_stdev' is its standard deviation in the stylus
 % coordinate system.
 
-c_average = zeros(1,3);
-c_stdev = zeros(1,3);
+c_average = [xMean, yMean, zMean];
+c_stdev = [xStdDev, yStdDev, zStdDev];
 
 disp( sprintf( 'Local tip position: (%g, %g, %g)', c_average(1), c_average(2), c_average(3) ) );
 disp( sprintf( 'Local tip stdev:    (%g, %g, %g)', c_stdev(1),   c_stdev(2),   c_stdev(3) ) );
@@ -68,8 +112,18 @@ drawLocalVectorInCoordSystems( c_average, pos, orient );
 %
 % 'c_world' are the tip points in the world coordinate system.
 % They should all be very near the pivot point.
-
-c_world = []
+cWorldTipsFromTool = zeros(m, 3);
+for q = 1:m
+    transformationToWorldMat = [
+            1, 0, 0, c(1);
+            0, 1, 0, c(2);
+            0, 0, 1, c(3);
+            0, 0, 0, 1
+        ];
+    temp = transformationToWorldMat * cTransformedToPositions(q, :)';
+    cWorldTipsFromTool(q, :) = [temp(1), temp(2), temp(3)];
+end
+c_world = cWorldTipsFromTool;
 drawPointsWithEllipsoid( c_world, c_stdev );
 
 
@@ -119,7 +173,7 @@ end
 function [c, r, bestInlierIndices] = fitSphereWithRANSAC( pos )
     % bestInlierIndices is the indexes of the coordinates
     numOfIterations = 20;
-    threshold = 10;
+    threshold = 0.5;
     [m, ~] = size(pos);
     bestInlierIndices = [];
     bestc = [0; 0; 0];
@@ -319,7 +373,56 @@ end
 % Use matlab's 'ellipsoid' and 'surf' functions.
 
 function drawPointsWithEllipsoid( points, stdev )
+    [m, ~] = size(points);
+    % Find the average c(world coordinates)
+    xSum = 0;
+    ySum = 0;
+    zSum = 0;
+    for i = 1:m
+       % sum the x values
+       xSum = xSum + points(i, 1);
+       % sum the y values
+       ySum = ySum + points(i, 2);
+       % sum the z values
+       zSum = zSum + points(i, 3);
+    end
+    xc = xSum/m;
+    yc = ySum/m;
+    zc = zSum/m;
     
-    % [YOUR CODE HERE (part 4)]
-
+    xr = stdev(1);
+    yr = stdev(2);
+    zr = stdev(3);
+    
+    [eigVec, eigVal] = eig(cov(points));
+    [x,y,z] = ellipsoid(0,0,0,1,1,1);
+    ellipsoidMat = [x(:), y(:), z(:)];
+    [m, ~] = size(ellipsoidMat);
+    rotMat = [];
+    for j = 1:m
+        newVec = eigVec' * ellipsoidMat(j, :)';
+        rotMat = [rotMat; newVec'];
+    end
+    % translate the matrix
+    translateMat = rotMat;
+    xLong = 1.96*sqrt(eigVal(1,1)) .* translateMat(:, 1);
+    yLong = 1.96*sqrt(eigVal(2,2)) .* translateMat(:, 2);
+    zLong = 1.96*sqrt(eigVal(3,3)) .* translateMat(:, 3);
+    x = [];
+    y = [];
+    z = [];
+    for k = 1:21:441
+        x = [x, xLong(k:k+20)];
+        y = [y, yLong(k:k+20)];
+        z = [z, zLong(k:k+20)];
+    end
+    for q = 1:21
+        for r = 1:21
+            x(q, r) = x(q, r) + xc;
+            y(q, r) = y(q, r) + yc;
+            z(q, r) = z(q, r) + zc;
+        end
+    end
+    % apply a transformation to those points
+    surf( x, y, z, 'FaceAlpha', 0.1)
 end
