@@ -2,7 +2,7 @@
 
 stylusID = '8700340';
 markerID = '8700339';
-dataFile = 'pivot_calibration_0.csv';
+dataFile = 'pivot_calibration_2.csv';
 
 setupDrawing();
 
@@ -20,15 +20,15 @@ setupDrawing();
 
 % fit the sphere to get centre c and radius r
 
-% [c, r] = fitSphere( pos );
+[c, r] = fitSphere( pos );
 
 % fit the sphere using RANSAC, instead.  Note that RANSAC should
 % return a list of indices of the inlying poses, and only those poses
 % should be used subsequently.
 
-[c, r, inlierIndices] = fitSphereWithRANSAC( pos );
-pos = pos( inlierIndices, : );
-orient = orient( inlierIndices, : );
+% [c, r, inlierIndices] = fitSphereWithRANSAC( pos );
+% pos = pos( inlierIndices, : );
+% orient = orient( inlierIndices, : );
 
 % Show the fit
 
@@ -424,5 +424,4 @@ function drawPointsWithEllipsoid( points, stdev )
         end
     end
     % apply a transformation to those points
-    surf( x, y, z, 'FaceAlpha', 0.1)
 end
