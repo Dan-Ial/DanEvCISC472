@@ -1,6 +1,6 @@
 CISC 472: Assignment 3
+Evelyn Yach (20071956)
 Daniel Oh (20063998)
-Evelyn Yach (20079156)
 
 Results(Without RANSAC):
 pivot_calibration_0: (-3.62744, -10.8191, -186.279) +/- (16.6282, 14.1962, 12.5941)
@@ -9,10 +9,10 @@ pivot_calibration_2: (-17.3991, -0.786382, -158.162) +/- (0.449139, 0.309227, 0.
 pivot_calibration_3: (-17.9292, -0.639105, -160.257) +/- (0.811305, 0.614405, 0.107862)
 
 Results(With RANSAC):
-pivot_calibration_0: (-17.6967, -1.61778, -156.567) +/- (0.77469, 0.61612, 0.262813)
-pivot_calibration_1: (-17.073, -0.906277, -158.124) +/- (0.473718, 0.473899, 0.177443)
-pivot_calibration_2: (-17.4028, -0.715155, -159.534) +/- (1.20598, 1.14053, 0.198628)
-pivot_calibration_3: (-17.8285, -1.11824, -160.154) +/- (0.739754, 0.584528, 0.142325)
+pivot_calibration_0: (-18.1271, -1.04205, -159.227) +/- (1.44107, 1.73756, 0.327935)
+pivot_calibration_1: (-17.1314, -0.902285, -157.934) +/- (0.43045, 0.427003, 0.190469)
+pivot_calibration_2: (-17.3961, -0.970535, -158.61) +/- (0.669941, 0.539175, 0.183115)
+pivot_calibration_3: (-17.9205, -1.01297, -160.639) +/- (0.85923, 0.690126, 0.139692)
 
 
 5a. What characterizes a good calibration set?  Justify based on your results.
@@ -47,7 +47,3 @@ where you plan on calibrating the tool is a good way to avoid outliers. Another 
 be to try and achieve high coverage on possible inliers by starting with swiveling the tool in 
 large circles, and gradually shrinking the size of the circles as the process continues. This would 
 create a spiral pattern of pivot calibration points that can cover a large calibration area.
-
-Note:
-Due to some trouble understanding the steps necessary for implementation, we were unable to 
-complete question 4. We ran into some difficulty determining how to fit our ellipse to the given data.

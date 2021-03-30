@@ -2,7 +2,7 @@
 
 stylusID = '8700340';
 markerID = '8700339';
-dataFile = 'pivot_calibration_2.csv';
+dataFile = 'pivot_calibration_0.csv';
 
 setupDrawing();
 
@@ -20,7 +20,7 @@ setupDrawing();
 
 % fit the sphere to get centre c and radius r
 
-% [c, r] = fitSphere( pos );
+%[c, r] = fitSphere( pos );
 
 % fit the sphere using RANSAC, instead.  Note that RANSAC should
 % return a list of indices of the inlying poses, and only those poses
@@ -32,7 +32,7 @@ orient = orient( inlierIndices, : );
 
 % Show the fit
 
-drawCoordSystems( pos, orient );
+%drawCoordSystems( pos, orient );
 %drawSphere( c, r );
 
 % Transform c into the coordinate system of each pos
@@ -47,10 +47,11 @@ for i = 1:m
     v = rotationMat(:, 2);
     w = rotationMat(:, 3);
     transformMat = [
-            u', dot(-pos(i, :), u);
-            v', dot(-pos(i, :), v);
-            w', dot(-pos(i, :), w);
-            0, 0, 0, 1 ];
+        u', dot(-pos(i, :), u);
+        v', dot(-pos(i, :), v);
+        w', dot(-pos(i, :), w);
+        0, 0, 0, 1 
+    ];
     temp = transformMat * [c; 1];
     cTransformedToPositions(i, :) = temp';
 end
@@ -112,18 +113,9 @@ disp( sprintf( 'Local tip stdev:    (%g, %g, %g)', c_stdev(1),   c_stdev(2),   c
 %
 % 'c_world' are the tip points in the world coordinate system.
 % They should all be very near the pivot point.
-cWorldTipsFromTool = zeros(m, 3);
-for q = 1:m
-    transformationToWorldMat = [
-            1, 0, 0, c(1);
-            0, 1, 0, c(2);
-            0, 0, 1, c(3);
-            0, 0, 0, 1
-        ];
-    temp = transformationToWorldMat * cTransformedToPositions(q, :)';
-    cWorldTipsFromTool(q, :) = [temp(1), temp(2), temp(3)];
-end
-c_world = cWorldTipsFromTool;
+
+c_world = cTransformedToPositions(:, 1:3);
+
 drawPointsWithEllipsoid( c_world, c_stdev );
 
 
@@ -394,66 +386,39 @@ function drawPointsWithEllipsoid( points, stdev )
     yr = stdev(2);
     zr = stdev(3);
     
+    %draw centre point
+    %scatter3(xc, yc, zc, '.', 'MarkerFaceColor', 'g');
+    
+    %draw all points
+    scatter3(points(:, 1), points(:, 2), points(:, 3), '.', ...
+        'MarkerFaceColor', 'g');
+    
     [eigVec, eigVal] = eig(cov(points));
+    
     [x,y,z] = ellipsoid(0,0,0,1,1,1);
-    ellipsoidMat = [x(:), y(:), z(:)];
-    [m, n] = size(ellipsoidMat);
     
-    %calculate rotation
-    rotMat = [];    
-    for row = 1:m  %pull out a row of ellipsoidMat
-        temp = eigVec' * ellipsoidMat(row,:)';
-        rotMat = [rotMat; temp'];
-    end
+    % Step 1: put the x, y, z points into a 441x3 matrix
+    %ellipsoidMat = [x(:), y(:), z(:)];
+    %[m, n] = size(ellipsoidMat);
     
-    %calculate translation
-    xTrans = 1.96*sqrt(eigVal(1,1)) .* rotMat(:, 1);
-    yTrans = 1.96*sqrt(eigVal(2,2)) .* rotMat(:, 2);
-    zTrans = 1.96*sqrt(eigVal(3,3)) .* rotMat(:, 3);
+    % Step 2: multiplying that on the right side by a 3x3 (diagonal) 
+    % scaling matrix
+    %scaleMat = ellipsoidMat * (1.96*sqrt(eigVal));
     
-    for i = 1:m
-        xTrans(i,1) = xTrans(i,1) + xc;
-        yTrans(i,1) = yTrans(i,1) + yc;
-        zTrans(i,1) = zTrans(i,1) + zc;
-    end
+    % Step 3: multiplying that on the right side by the transpose of 
+    % eigenvector array
+    %rotMat = scaleMat * eigVec';
     
-    %conver 441x1 back to 21x21
-    X = [];
-    Y = [];
-    Z = [];
-    for k = 1:21:441
-        X = [X, xTrans(k:k+20)];
-        Y = [Y, yTrans(k:k+20)];
-        Z = [Z, zTrans(k:k+20)];
-    end
-        
-%     rotMat = [];
-%     for j = 1:m
-%         newVec = eigVec' * ellipsoidMat(j, :)';
-%         rotMat = [rotMat; newVec'];
-%     end
-%     % translate the matrix
-%     translateMat = rotMat;
-%     xLong = 1.96*sqrt(eigVal(1,1)) .* translateMat(:, 1);
-%     yLong = 1.96*sqrt(eigVal(2,2)) .* translateMat(:, 2);
-%     zLong = 1.96*sqrt(eigVal(3,3)) .* translateMat(:, 3);
-%     x = [];
-%     y = [];
-%     z = [];
-%     for k = 1:21:441
-%         x = [x, xLong(k:k+20)];
-%         y = [y, yLong(k:k+20)];
-%         z = [z, zLong(k:k+20)];
-%     end
-%     for q = 1:21
-%         for r = 1:21
-%             x(q, r) = x(q, r) + xc;
-%             y(q, r) = y(q, r) + yc;
-%             z(q, r) = z(q, r) + zc;
-%         end
-%     end
-    % apply a transformation to those points
-    %figure
+    % Step 4: adding to that the mean of the points
+    %Matrix = rotMat + mean(points);
+    
+    Matrix = (([x(:), y(:), z(:)] * (1.96*sqrt(eigVal))) * eigVec') + mean(points);
+    
+    % use reshape to turn each 441x1 back into 21x21
+    X = reshape(Matrix(:,1),[21,21]);
+    Y = reshape(Matrix(:,2),[21,21]);
+    Z = reshape(Matrix(:,3),[21,21]);
+    
     surf(X, Y, Z, 'FaceAlpha', 0.1)
-    %axis equal
+
 end
