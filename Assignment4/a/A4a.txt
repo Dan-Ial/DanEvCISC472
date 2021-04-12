@@ -1,0 +1,60 @@
+CISC 472 Assignment 4 - Part A
+Due April 9, 2021
+
+
+1. Implement ICP in Matlab using the skeleton code provided.
+
+   The code already does this:
+
+     - reads a femur model;
+     - reads your collected points (knee1.csv and knee2.csv);
+     - find the points at which you paused with the stylus;
+     - uses a kD-tree to find the closest model points to a
+       *transformed* set of your collected points; and
+     - renders everything.
+
+   (You might need to install the MatLab package containing the
+   kD-tree, depending upon the version of MatLab you're running.)
+
+   Your code should only be inside the ICP loop.  You'll have to think
+   carefully about how you want to implement this.  The implementation
+   is much easier if you have thought a lot beforehand.
+
+   With each iteration in the ICP loop, you should accumulate the
+   incremental translations and rotations into 'accumTrans' and
+   'accumRot'.  Those are returned from the apply_ICP() function.
+
+2. Apply your ICP algorithm to your knee1.csv and knee2.csv.  Report
+   the results for each.  Include rotation, translation, number of
+   iterations, and RMS error.
+
+3. ICP can fail to find a good match (i.e. a match with low RMS
+   error).  One workaround is to try ICP multiple times, randomly
+   choosing a different initial transformation each time.
+
+   Modify your code so that it makes a number of attempts
+   ('numAttempts' in the code) and chooses a random pose each time.
+   Think about what a good initial translation *and* rotation might
+   be.
+
+4. Apply your multi-attempt ICP algorithm to your data.  Report the
+   results, as above, for both knee1.csv and knee2.csv.
+
+5. Did the multi-attempt version of ICP work better?  Discuss this
+   briefly, speculating on ICP's strengths and weaknesses (at most a
+   paragraph).
+
+To submit:
+
+  Create a directory called 'a4a' containing EXACTLY:
+
+    - your a4a.m
+
+    - a README.txt file with (a) your names and netIDs and (b)
+      responses to the questions above.
+
+  DO NOT INCLUDE femur.stl, knee1.csv, knee2.csv, or stlread.m.
+
+  Put your a4a directory inside another directory called 'a4'.  Once
+  Part B is done, also put it in 'a4', zip the whole thing, and submit
+  it on OnQ.
