@@ -159,6 +159,25 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % [ YOUR CODE HERE ]
     % With each iteration in the ICP loop, you should accumulate the
     % incremental translations and rotations into 'accumTrans' and 'accumRot'
+    
+    % 1. for each point (p) in the point set (P), find the closest model 
+    % point (m) in the model (M)
+    % already done above in the given skeleton code
+    % p = 
+    % m = closestPts
+    
+    % 2. given the paired points (p,m), apply Procrustes to find  a
+    % transformation (T') , to move the p to the corresponding m
+    
+    % 3. add T' to the accumulated transformation:  T <- T'T
+    
+    % 4. update points using the transformation: p <- T'p
+    
+    % 5. RMS error: determine the error between each p and the corresponding m
+    
+    % 6. If the error is too large return to Step 1
+    % This step is achieved in the while loop "rmsError > maxRMSError"
+
 
     prevRMSE = rmsError;
 
