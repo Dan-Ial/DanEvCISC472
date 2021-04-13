@@ -157,6 +157,8 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     closestPts = modelPts(indices,:);
 
     % [ YOUR CODE HERE ]
+    % With each iteration in the ICP loop, you should accumulate the
+    % incremental translations and rotations into 'accumTrans' and 'accumRot'
 
     prevRMSE = rmsError;
 
