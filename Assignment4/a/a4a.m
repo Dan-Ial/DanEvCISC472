@@ -162,12 +162,35 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     
     % 1. for each point (p) in the point set (P), find the closest model 
     % point (m) in the model (M)
-    % already done above in the given skeleton code
-    % p = 
+    % already (mostly) done above in the given skeleton code
+    % P = xPts
+    % p = indices
+    % M = modelPts
     % m = closestPts
     
     % 2. given the paired points (p,m), apply Procrustes to find  a
     % transformation (T') , to move the p to the corresponding m
+    
+    [m, n] = size(xPts);
+    % inital rotation/translation
+    % accumRot and accumTrans
+    
+    % let Q = the rotation/translation applied to P
+    Q = (accumRot * xPts') +  accumTrans';
+    
+    % use Procrustes method to get rotation
+    meanP = repmat( mean(xPts',2), 1, m );
+    meanQ = repmat( mean(Q,2), 1, m );
+    
+    Pcentred = xPts' - meanP;
+    Qcentred = Q - meanQ;
+
+    [U, S, V] = svd( Qcentred * Pcentred' );
+
+    accumRot2 = U * V';
+    
+    % caluclate translation
+    accumTrans2 = meanQ - accumRot2 * meanP;
     
     % 3. add T' to the accumulated transformation:  T <- T'T
     
@@ -176,7 +199,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % 5. RMS error: determine the error between each p and the corresponding m
     
     % 6. If the error is too large return to Step 1
-    % This step is achieved in the while loop "rmsError > maxRMSError"
+    % This step is achieved in the while loop "rmsError > maxRMSError ..."
 
 
     prevRMSE = rmsError;
