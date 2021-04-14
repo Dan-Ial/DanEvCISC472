@@ -135,7 +135,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
   
   % Apply initRot and initTrans to points.  Note that rotation is
   % applied around the centroid of the points.
-			    
+  
   xPts = (initRot * (pts - mean(pts))')' + mean(pts) + initTrans;
 
   % Accumulate a transformation over multiple iterations of ICP in this function.
@@ -150,7 +150,6 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
   iter = 0;           % current iteration
 
   while rmsError > maxRMSError & iter < maxIterations & abs(rmsError - prevRMSE) > noImprovementFraction*prevRMSE
-
     % Find the nearest model points using kD-tree
 
     indices = knnsearch( kdTree, xPts );
@@ -159,6 +158,8 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % [ YOUR CODE HERE ]
     % With each iteration in the ICP loop, you should accumulate the
     % incremental translations and rotations into 'accumTrans' and 'accumRot'
+    
+    prevRMSE = rmsError;
     
     % 1. for each point (p) in the point set (P), find the closest model 
     % point (m) in the model (M)
@@ -175,8 +176,8 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % inital rotation/translation
     % accumRot and accumTrans
     
-    % let Q = the rotation/translation applied to P
-    Q = (accumRot * xPts') +  accumTrans';
+    % let Q = closestPts'
+    Q = closestPts'
     
     % use Procrustes method to get rotation
     meanP = repmat( mean(xPts',2), 1, m );
@@ -193,22 +194,19 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     accumTrans2 = meanQ - accumRot2 * meanP;
     
     % 3. add T' to the accumulated transformation:  T <- T'T
-    accumRot = accumRot2;
-    accumTrans = accumTrans2;
+    accumRot = accumRot2';
+    accumTrans = accumTrans2';
     
     % 4. update points using the transformation: p <- T'p
-    xPts = (accumRot * xPts' + accumTrans)';
+    xPts = ((accumRot * xPts') + accumTrans')';
     
     % 5. RMS error: determine the error between each p and the corresponding m
-    rmsError = sqrt(mean((xPts - closestPts).^2));
+    %rmsError = sqrt(mean((xPts - closestPts).^2));
+    rmsError = sqrt(mean((xPts(:)-closestPts(:)).^2));
     
     % 6. If the error is too large return to Step 1
-    % This step is achieved in the while loop "rmsError > maxRMSError ..."
+    % This step is achieved in the while loop "rmsError > maxRMSError ...
     
-    
-    
-    prevRMSE = rmsError;
-
     % Update the display
 
     draw_all( modelPts, xPts, closestPts );
@@ -216,7 +214,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     disp( sprintf( '%2d: RMSE = %.2f', iter, rmsError ) );
 
     iter = iter + 1;
-  end
+  end % end while
 
   R = accumRot;
   t = accumTrans;
