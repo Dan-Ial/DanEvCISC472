@@ -10,7 +10,7 @@
 
 
 modelFilename = 'femur.stl';            % model
-collectedFilename = 'knee1.csv';        % collected points
+collectedFilename = 'knee2.csv';        % collected points
 stylusID = '8700340';                   % ID in collected points file
 stylusTip = [-17.02 -1.23 -157.13];     % Calibrated stylus tip position from Assignment 3
 
@@ -78,7 +78,7 @@ for i = 1:numAttempts
 
   disp( sprintf( "\nAttempt %d", i ) );
 
-  [accumRot,accumTrans,rmsError] = apply_ICP( observedPts, initRot, initTrans, kdTree, modelPts );
+  [accumRot,accumTrans,rmsError] = apply_ICP( observedPts, initRot, initTrans, kdTree, modelPts )
 
   % Keep the best so far
 
