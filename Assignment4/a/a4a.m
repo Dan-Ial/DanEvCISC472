@@ -159,7 +159,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % With each iteration in the ICP loop, you should accumulate the
     % incremental translations and rotations into 'accumTrans' and 'accumRot'
     
-    prevRMSE = rmsError;
+    prevRMSE = rmsError;%moved
     
     % 1. for each point (p) in the point set (P), find the closest model 
     % point (m) in the model (M)
@@ -206,6 +206,8 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     
     % 6. If the error is too large return to Step 1
     % This step is achieved in the while loop "rmsError > maxRMSError ...
+    
+    %prevRMSE = rmsError;%original
     
     % Update the display
 
