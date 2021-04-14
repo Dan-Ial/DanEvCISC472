@@ -177,7 +177,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % accumRot and accumTrans
     
     % let Q = closestPts'
-    Q = closestPts'
+    Q = closestPts';
     
     % use Procrustes method to get rotation
     meanP = repmat( mean(xPts',2), 1, m );
@@ -194,11 +194,11 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     accumTrans2 = meanQ - accumRot2 * meanP;
     
     % 3. add T' to the accumulated transformation:  T <- T'T
-    accumRot = accumRot2';
-    accumTrans = accumTrans2';
+    accumRot = accumRot2' + accumRot;
+    accumTrans = accumTrans2' + accumTrans;
     
     % 4. update points using the transformation: p <- T'p
-    xPts = ((accumRot * xPts') + accumTrans')';
+    xPts = ((accumRot2 * xPts') + accumTrans2)';
     
     % 5. RMS error: determine the error between each p and the corresponding m
     %rmsError = sqrt(mean((xPts - closestPts).^2));
