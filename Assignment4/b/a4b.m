@@ -8,7 +8,7 @@ I2_filename = 'mr_1.png';
 I1_title = 'CT';
 I2_title = 'MR'; 
 
-interactive = true;
+interactive = false;
 
 % Get the files
 
@@ -136,6 +136,27 @@ function [MI, RMS, NCC] = collect_measures( I1, I2, rotation, step )
   NCC = zeros( rowRange, colRange );
 
   % YOUR CODE HERE
+  % build matrices of similarity measures for different offsets and rotations, 
+  % as described by the function's header comment
+  
+  % translate and rotate I2
+  % rotate I2 using 'imrotate'
+  I2_T = imrotate(I2,rotation,'bilinear','crop');
+  
+  % translate I2 using 'imtranslate'
+  % calculate for rows
+  i_T = 0;
+  for i = 1:rowRange
+      
+  end
+  % calculate for columns
+  j_T = 0;
+  for j = 1:colRange
+      
+  end
+  
+  translation = [i_T, j_T];
+  I2_T = imtranslate(I2_T,translation);
 
 end
 
