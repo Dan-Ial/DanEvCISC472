@@ -68,7 +68,7 @@ end
 % In your initial testing, set 'step' to 40.  For your final images, set
 % it to 4 and save the images at the biggest size you can.
 
-step = 40;
+step = 4;
 
 % CT/MR measures
 
@@ -139,24 +139,36 @@ function [MI, RMS, NCC] = collect_measures( I1, I2, rotation, step )
   % build matrices of similarity measures for different offsets and rotations, 
   % as described by the function's header comment
   
-  % translate and rotate I2
-  % rotate I2 using 'imrotate'
-  I2_T = imrotate(I2,rotation,'bilinear','crop');
+  % defining how much the offset increments by
+  rowIncrement = 1.5*nrows/rowRange;
+  colIncrement = 1.5*ncols/colRange;
   
-  % translate I2 using 'imtranslate'
   % intital offset
   a = -0.75*nrows;
   b = -0.75*ncols;
+  
   % calculate for rows and columns
   for i = 1:rowRange
+    % resetting column offset
+    b = -0.75*ncols;
     for j = 1:colRange
-        %translation = [a, b];
-        %I2_T = imtranslate(I2_T,translation);
+        % rotate I2 using 'imrotate'
+        I2_T = imrotate(I2,rotation,'bilinear','crop');
         
-        %update offset (i,j)
-        a = a + step;
-        b = b + step;
+        % translate I2 using 'imtranslate'
+        translation = [a, b];
+        I2_T = imtranslate(I2_T,translation);
+        
+        % computing the similarity measures
+        MI(i, j) = compute_MI(I1, I2_T);
+        RMS(i, j) = compute_RMS(I1, I2_T);
+        NCC(i, j) = compute_NCC(I1, I2_T);
+        
+        % update column offset
+        b = b + colIncrement;
     end  
+    % update row offset
+    a = a + rowIncrement;
   end
   
   
