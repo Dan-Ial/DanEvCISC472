@@ -10,7 +10,7 @@
 
 
 modelFilename = 'femur.stl';            % model
-collectedFilename = 'knee2.csv';        % collected points
+collectedFilename = 'knee1.csv';        % collected points
 stylusID = '8700340';                   % ID in collected points file
 stylusTip = [-17.02 -1.23 -157.13];     % Calibrated stylus tip position from Assignment 3
 
@@ -129,7 +129,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
 
   % parameters for one run of ICP
 
-  maxRMSError = 5.0;             % ICP error (in mm)
+  maxRMSError = 0;             % ICP error (in mm)
   maxIterations = 200;           % ICP iterations
   noImprovementFraction = 0.001; % quit iterating when RMSE improves by less than this fraction
   
@@ -196,18 +196,12 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % 3. add T' to the accumulated transformation:  T <- T'T
     accumRot = accumRot2' + accumRot;
     accumTrans = accumTrans2' + accumTrans;
-    
+
     % 4. update points using the transformation: p <- T'p
     xPts = ((accumRot2 * xPts') + accumTrans2)';
     
     % 5. RMS error: determine the error between each p and the corresponding m
-    %rmsError = sqrt(mean((xPts - closestPts).^2));
     rmsError = sqrt(mean((xPts(:)-closestPts(:)).^2));
-    
-    % 6. If the error is too large return to Step 1
-    % This step is achieved in the while loop "rmsError > maxRMSError ...
-    
-    %prevRMSE = rmsError;%original
     
     % Update the display
 
@@ -218,6 +212,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     iter = iter + 1;
   end % end while
 
+  
   R = accumRot;
   t = accumTrans;
 
