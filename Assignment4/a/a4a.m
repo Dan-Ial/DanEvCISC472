@@ -17,7 +17,7 @@ stylusTip = [-17.02 -1.23 -157.13];     % Calibrated stylus tip position from As
 
 % number of attempts running ICP with different initial pose
 
-numAttempts = 10;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
+numAttempts = 5;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
 
 
 % Get the stylus-collected points
@@ -176,7 +176,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % M = modelPts
     % m = closestPts
     
-    % 2. given the paired points (p,m), apply Procrustes to find  a
+    % 2. given the paired points (p,m), apply Procrustes to find a
     % transformation (T') , to move the p to the corresponding m
     
     [m, n] = size(xPts);
@@ -221,7 +221,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
 
   
   R = accumRot;
-  t = accumTrans(1, :);
+  t = accumTrans;
 
   % Report
 
