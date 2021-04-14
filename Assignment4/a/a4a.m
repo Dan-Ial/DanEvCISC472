@@ -17,7 +17,7 @@ stylusTip = [-17.02 -1.23 -157.13];     % Calibrated stylus tip position from As
 
 % number of attempts running ICP with different initial pose
 
-numAttempts = 1;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
+numAttempts = 10;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
 
 
 % Get the stylus-collected points
@@ -43,6 +43,9 @@ disp( sprintf( 'read %d model points', length(modelPts)) );
 
 kdTree = KDTreeSearcher( modelPts, 'BucketSize', 10 );
 
+% Initialize bestRMSError with a high value
+
+bestRMSError = 9999;
 
 % Run ICP several times on the observedPts
 
@@ -62,23 +65,27 @@ for i = 1:numAttempts
   % axes of the observed points to be NEAR the principal axes of
   % the model points.
 
+  % Initial translation and rotation values should be very small or we risk
+  % sending the program far off course. Keeping the random values from a 
+  % range of 0-1 is sufficient
+  
   % Pick an initial translation
   % 
   % [YOUR CODE HERE (after you get apply_ICP working)]
-
-  initTrans = [0 0 0];
+  
+  initTrans = [1 1 1].*rand(1);
 
   % Pick a uniform random rotation
   %
   % [YOUR CODE HERE (after you get apply_ICP working)]
 
-  initRot = eye(3,3);
+  initRot = eye(3,3).*rand(1);
   
   % Apply ICP with this initRot and initTrans
 
   disp( sprintf( "\nAttempt %d", i ) );
 
-  [accumRot,accumTrans,rmsError] = apply_ICP( observedPts, initRot, initTrans, kdTree, modelPts )
+  [accumRot,accumTrans,rmsError] = apply_ICP( observedPts, initRot, initTrans, kdTree, modelPts );
 
   % Keep the best so far
 
@@ -214,7 +221,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
 
   
   R = accumRot;
-  t = accumTrans;
+  t = accumTrans(1, :);
 
   % Report
 
