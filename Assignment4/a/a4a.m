@@ -193,6 +193,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     Pcentred = xPts' - meanP;
     Qcentred = Q - meanQ;
 
+    % caluclate rotation
     [U, S, V] = svd( Qcentred * Pcentred' );
 
     accumRot2 = U * V';
@@ -201,7 +202,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     accumTrans2 = meanQ - accumRot2 * meanP;
     
     % 3. add T' to the accumulated transformation:  T <- T'T
-    accumRot = accumRot2' + accumRot;
+    accumRot = accumRot*accumRot2';
     accumTrans = accumTrans2' + accumTrans;
 
     % 4. update points using the transformation: p <- T'p
