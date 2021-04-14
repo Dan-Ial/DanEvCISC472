@@ -144,19 +144,23 @@ function [MI, RMS, NCC] = collect_measures( I1, I2, rotation, step )
   I2_T = imrotate(I2,rotation,'bilinear','crop');
   
   % translate I2 using 'imtranslate'
-  % calculate for rows
-  i_T = 0;
+  % intital offset
+  a = -0.75*nrows;
+  b = -0.75*ncols;
+  % calculate for rows and columns
   for i = 1:rowRange
-      
-  end
-  % calculate for columns
-  j_T = 0;
-  for j = 1:colRange
-      
+    for j = 1:colRange
+        %translation = [a, b];
+        %I2_T = imtranslate(I2_T,translation);
+        
+        %update offset (i,j)
+        a = a + step;
+        b = b + step;
+    end  
   end
   
-  translation = [i_T, j_T];
-  I2_T = imtranslate(I2_T,translation);
+  
+  
 
 end
 
