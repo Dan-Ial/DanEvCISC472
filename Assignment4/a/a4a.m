@@ -17,7 +17,7 @@ stylusTip = [-17.02 -1.23 -157.13];     % Calibrated stylus tip position from As
 
 % number of attempts running ICP with different initial pose
 
-numAttempts = 1;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
+numAttempts = 5;   % CHANGE THIS AFTER GETTING apply_ICP() WORKING
 
 
 % Get the stylus-collected points
@@ -73,14 +73,13 @@ for i = 1:numAttempts
   % 
   % [YOUR CODE HERE (after you get apply_ICP working)]
   initTrans = [0 0 0]
-  %initTrans = [1 1 1].*rand(1);
+%   initTrans = [1 1 1].*rand(1);
 
   % Pick a uniform random rotation
   %
   % [YOUR CODE HERE (after you get apply_ICP working)]
   initRot = eye(3,3)
-
-  %initRot = eye(3,3).*rand(1);
+%   initRot = eye(3,3).*rand(1);
   
   % Apply ICP with this initRot and initTrans
 
@@ -155,6 +154,8 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
 
   rmsError = 9999;    % current error
   iter = 0;           % current iteration
+  
+  xPtsOld = pts;
 
   while rmsError > maxRMSError & iter < maxIterations & abs(rmsError - prevRMSE) > noImprovementFraction*prevRMSE
     % Find the nearest model points using kD-tree
@@ -162,19 +163,14 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     indices = knnsearch( kdTree, xPts );
     closestPts = modelPts(indices,:);
 
-    % [ YOUR CODE HERE ]
     % With each iteration in the ICP loop, you should accumulate the
     % incremental translations and rotations into 'accumTrans' and 'accumRot'
     
-    prevRMSE = rmsError;%moved
+    prevRMSE = rmsError;
     
     % 1. for each point (p) in the point set (P), find the closest model 
     % point (m) in the model (M)
     % already (mostly) done above in the given skeleton code
-    % P = xPts
-    % p = indices
-    % M = modelPts
-    % m = closestPts
     
     % 2. given the paired points (p,m), apply Procrustes to find a
     % transformation (T') , to move the p to the corresponding m
@@ -185,7 +181,7 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     % let Q = closestPts'
     Q = closestPts';
     
-    % use Procrustes method to get rotation
+    % use Procrustes method to get rotation and translation
     meanP = repmat( mean(xPts', 2), 1, m );
     meanQ = repmat( mean(Q, 2), 1, m );
     Pcentred = xPts' - meanP;
@@ -198,8 +194,11 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     
     % caluclate translation
     accumTrans2 = (meanQ - accumRot2 * meanP)';
+%     accumTrans2 = (meanQ - meanP)';
+%     accumTrans2 = xPts - ((accumRot2 * (xPtsOld - mean(xPtsOld))')' + mean(xPtsOld))
     
     % 3. add T' to the accumulated transformation:  T <- T'T
+    % doing the accumulation seperately
     accumRot = accumRot * accumRot2';
     accumTrans = accumTrans + accumTrans2;
 
@@ -210,40 +209,40 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     
     % 5. RMS error: determine the error between each p and the corresponding m
     rmsError = sqrt(mean((xPts(:)-closestPts(:)).^2));
-    
-    %prevRMSE = rmsError;%original
+   
     
     % Update the display
 
     draw_all( modelPts, xPts, closestPts );
 
     disp( sprintf( '%2d: RMSE = %.2f', iter, rmsError ) );
+    
+    xPtsOld = xPts;
 
     iter = iter + 1;
   end % end while
   
   % use proscrustes method to get the transformations between pts and xPts
   
-%   ptsTranspose = pts';
-%   xPtsTranspose = xPts';
-%   [~, n] = size(ptsTranspose);
-%   ptsMean = repmat( mean(ptsTranspose,2), 1, n );
-%   xPtsMean = repmat( mean(xPtsTranspose,2), 1, n );
-% 
-%   ptsCentroid = ptsTranspose - ptsMean;
-%   xPtscentroid = xPtsTranspose - xPtsMean;
-% 
-%   [U2, ~, V2] = svd( xPtscentroid * ptsCentroid' );
-%   
-%   % calculate rotation
-%   R = U2 * V2';
-% 
-%   % calculate translation
-%   t = (xPtsMean - R * ptsMean)'
-%   t = t(1, :)
+  ptsTranspose = pts';
+  xPtsTranspose = xPts';
+  [~, n] = size(ptsTranspose);
+  ptsMean = repmat( mean(ptsTranspose,2), 1, n );
+  xPtsMean = repmat( mean(xPtsTranspose,2), 1, n );
+
+  ptsCentroid = ptsTranspose - ptsMean;
+  xPtscentroid = xPtsTranspose - xPtsMean;
+
+  [U2, ~, V2] = svd( xPtscentroid * ptsCentroid' );
   
-  R = accumRot;
-  t = accumTrans;
+  % calculate rotation
+  R = U2 * V2';
+
+  % calculate translation
+  t = xPts - ((R * (pts - mean(pts))')' + mean(pts));
+  
+%   R = accumRot;
+%   t = accumTrans;
   
   % Report
 
