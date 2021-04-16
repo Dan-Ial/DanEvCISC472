@@ -1,5 +1,4 @@
-Assignment 4, Part A
-
+CISC 472: Assignment 4a
 Evelyn Yach (20071956)
 Daniel Oh (20063998)
 
