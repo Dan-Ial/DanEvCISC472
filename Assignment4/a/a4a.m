@@ -70,15 +70,11 @@ for i = 1:numAttempts
   % range of 0-1 is sufficient
   
   % Pick an initial translation
-  % 
-  % [YOUR CODE HERE (after you get apply_ICP working)]
-  initTrans = [0 0 0]
+  initTrans = [0 0 0];
 %   initTrans = [1 1 1].*rand(1);
 
   % Pick a uniform random rotation
-  %
-  % [YOUR CODE HERE (after you get apply_ICP working)]
-  initRot = eye(3,3)
+  initRot = eye(3,3);
 %   initRot = eye(3,3).*rand(1);
   
   % Apply ICP with this initRot and initTrans
@@ -216,8 +212,6 @@ function [R,t,rmsError] = apply_ICP( pts, initRot, initTrans, kdTree, modelPts )
     draw_all( modelPts, xPts, closestPts );
 
     disp( sprintf( '%2d: RMSE = %.2f', iter, rmsError ) );
-    
-    xPtsOld = xPts;
 
     iter = iter + 1;
   end % end while
